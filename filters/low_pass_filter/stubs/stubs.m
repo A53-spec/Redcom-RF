@@ -10,28 +10,18 @@ physical_constants;
 unit = 1e-3; % specify everything in mm
 MSL_length = 30;
 MSL_width = 3.2; % Not 50 Ohms for e_r=4.2 and d = 1.58mm;
-substrate_thickness = 1.27;
-substrate_epr = 10.8;
+substrate_thickness = 1.58;
+substrate_epr = 4.2;
 
 f_max = 6e9;
 
 %Filter parameters
-w_50 = 1.1;
-w_C = 8;
-w_L = 0.2;
+w1 = 0.5831;
+w2 = 1.2367;
+w3 = 3.6318;
+l1 = 8;
 
-l_L1 = 8.59;
-l_L2 = 2.98;
-l_L3 = 13.01;
-l_L4 = 6.49;
-l_L5 = 11.62;
-
-l_C2 = 5.07;
-l_C4 = 3.7;
-l_C6 = 4.39;
-
-port_slot = l_L1 + l_L3 + l_L5 + l_C6;
-
+port_slot = w2+l1+w3+l1+w2;
 
 %SETUP THE FDTD PARAMETERS
 FDTD = InitFDTD();
@@ -55,63 +45,39 @@ start = [mesh.x(1),   mesh.y(1),   0];
 stop  = [mesh.x(end), mesh.y(end), substrate_thickness];
 CSX = AddBox( CSX, 'FR4', 0, start, stop );
 
-
 %ADD PORTS
 
 CSX = AddMetal( CSX, 'PEC' );
-portstart = [ mesh.x(1), -w_50/2, substrate_thickness];
-portstop  = [ -port_slot/2,  w_50/2, 0];
+portstart = [ mesh.x(1), -MSL_width/2, substrate_thickness];
+portstop  = [ -port_slot/2,  MSL_width/2, 0];
 [CSX,port{1}] = AddMSLPort( CSX, 999, 1, 'PEC', portstart, portstop, 0, [0 0 -1], 'ExcitePort', true, 'FeedShift', 10*resolution, 'MeasPlaneShift',  MSL_length/3);
  
-portstart = [mesh.x(end), -w_50/2, substrate_thickness];
-portstop  = [port_slot/2          ,  w_50/2, 0];
+portstart = [mesh.x(end), -MSL_width/2, substrate_thickness];
+portstop  = [port_slot/2          ,  MSL_width/2, 0];
 [CSX,port{2}] = AddMSLPort( CSX, 999, 2, 'PEC', portstart, portstop, 0, [0 0 -1], 'MeasPlaneShift',  MSL_length/3 );
     
+
+%STUBS
+start = [-port_slot/2,  0, substrate_thickness];
+stop  = [ -port_slot/2+w2,  MSL_width/2+l1/2, substrate_thickness];
+CSX = AddBox( CSX, 'PEC', 999, start, stop );
+
+start = [-port_slot/2+w2,  0, substrate_thickness];
+stop  = [ -port_slot/2+w2+l1,  w1, substrate_thickness];
+CSX = AddBox( CSX, 'PEC', 999, start, stop );
+
+start = [-port_slot/2+w2+l1,  0, substrate_thickness];
+stop  = [ -port_slot/2+w2+l1+w3,  MSL_width/2+l1/2, substrate_thickness];
+CSX = AddBox( CSX, 'PEC', 999, start, stop );
     
-## w_50 = 1.1;
-## w_C = 8;
-## w_L = 0.2;
-##
-## l_L1 = 8.59;
-## l_L2 = 2.98;
-## l_L3 = 13.01;
-## l_L4 = 6.49;
-## l_L5 = 11.62;
-##
-## l_C2 = 5.07;
-## l_C4 = 3.7;
-## l_C6 = 4.39;
-start = [-port_slot/2,  w_L/2, substrate_thickness];
-stop  = [ -port_slot/2+l_L1,  -w_L/2, substrate_thickness];
+start = [-port_slot/2+w2+l1+w3,  0, substrate_thickness];
+stop  = [ -port_slot/2+w2+2*l1+w3,  w1, substrate_thickness];
 CSX = AddBox( CSX, 'PEC', 999, start, stop );
 
-start = [-port_slot/2+l_L1,  w_L/2, substrate_thickness];
-stop  = [ -port_slot/2+l_L1+l_L3,  -w_L/2, substrate_thickness];
+start = [-port_slot/2+w2+2*l1+w3,  0, substrate_thickness];
+stop  = [ -port_slot/2+w2+2*l1+w3+w2,  MSL_width/2+l1/2, substrate_thickness];
 CSX = AddBox( CSX, 'PEC', 999, start, stop );
 
-start = [-port_slot/2+l_L1+l_L3,  w_L/2, substrate_thickness];
-stop  = [ -port_slot/2+l_L1+l_L3+l_L5,  -w_L/2, substrate_thickness];
-CSX = AddBox( CSX, 'PEC', 999, start, stop );
-
-start = [-port_slot/2+l_L1+l_L3+l_L5,  w_C/2, substrate_thickness];
-stop  = [ -port_slot/2+l_L1+l_L3+l_L5+l_C6,  -w_C/2, substrate_thickness];
-CSX = AddBox( CSX, 'PEC', 999, start, stop );
-
-start = [-port_slot/2+l_L1-w_L/2,  -w_L/2, substrate_thickness];
-stop  = [ -port_slot/2+l_L1+w_L/2,  -l_L2, substrate_thickness];
-CSX = AddBox( CSX, 'PEC', 999, start, stop );
-
-start = [-port_slot/2+l_L1-w_C/2,  -l_L2, substrate_thickness];
-stop  = [ -port_slot/2+l_L1+w_C/2,  -l_L2-l_C2, substrate_thickness];
-CSX = AddBox( CSX, 'PEC', 999, start, stop );
-
-start = [-port_slot/2+l_L1+l_L3-w_L/2,  -w_L/2, substrate_thickness];
-stop  = [ -port_slot/2+l_L1+l_L3+w_L/2,  -l_L4, substrate_thickness];
-CSX = AddBox( CSX, 'PEC', 999, start, stop );
-
-start = [-port_slot/2+l_L1+l_L3-w_C/2,  -l_L4, substrate_thickness];
-stop  = [ -port_slot/2+l_L1+l_L3+w_C/2,  -l_L4-l_C4, substrate_thickness];
-CSX = AddBox( CSX, 'PEC', 999, start, stop );
     
 %RUN OPENEMS
 Sim_Path = 'tmp';
@@ -139,4 +105,4 @@ plot(f/1e9,20*log10(abs(s21)),'r--','LineWidth',2);
 legend('S_{11}','S_{21}');
 ylabel('S-Parameter (dB)','FontSize',12);
 xlabel('frequency (GHz) \rightarrow','FontSize',12);
-ylim([-40 2]);
+ylim([-60 2]);
