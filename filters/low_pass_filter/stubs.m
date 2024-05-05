@@ -9,45 +9,32 @@ clc
 physical_constants;
 unit = 1e-3; % specify everything in mm
 MSL_length = 30;
-MSL_width = 3.127;
+MSL_width = 3.2; % Not 50 Ohms for e_r=4.2 and d = 1.58mm;
 substrate_thickness = 1.58;
 substrate_epr = 4.2;
 
 f_max = 6e9;
 
 %Filter parameters
-port_slot = 33.45;
+w1 = 0.5831;
+w2 = 1.2367;
+w3 = 3.6318;
+l1 = 8;
 
-w1 = 11.3;
-w2 = 0.428;
-l1 = 2.05;
-l2 = 6.63;
-l3 = 7.69;
-l4 = 9.04;
-l5 = 5.63;
-l6 = 2.41;
+port_slot = w2+l1+w3+l1+w2;
 
 %SETUP THE FDTD PARAMETERS
 FDTD = InitFDTD();
 FDTD = SetGaussExcite( FDTD, f_max/2, f_max/2 );
 BC   = {'PML_8' 'PML_8' 'MUR' 'MUR' 'PEC' 'MUR'};
-FDTD = SetBoundaryCond( FDTD, BC )
+FDTD = SetBoundaryCond( FDTD, BC );
+
 
 %SETUP THE MESH
 CSX = InitCSX();
 resolution = c0/(f_max*sqrt(substrate_epr))/unit /50; % resolution of lambda/50
-
-%mesh1.x = SmoothMeshLines( [-port_slot/2 l1-port_slot/2+[resolution/3 -resolution/3*2]/4], resolution/4, 1.5 ,0 );
-%mesh2.x = SmoothMeshLines( [(l1+l2)-port_slot/2 (l1+l2+l3)-port_slot/2+[resolution/3 -resolution/3*2]/4 ], resolution/4, 1.5 ,0 );
-%mesh3.x = SmoothMeshLines( [(l1+l2+l3+l4)-port_slot/2 (l1+l2+l3+l4+l5)-port_slot/2+[resolution/3 -resolution/3*2]/4 ], resolution/4, 1.5 ,0 );
-%mesh.x = SmoothMeshLines( [-MSL_length mesh1.x mesh2.x mesh3.x MSL_length], resolution, 1.5 ,0 );
 mesh.x = SmoothMeshLines( [-MSL_length MSL_length], resolution, 1.5 ,0 );
- 
-%mesh1.y = SmoothMeshLines( [0 MSL_width/2+[-resolution/3 +resolution/3*2]/4], resolution/4 , 1.5 ,0);
-%mesh2.y = SmoothMeshLines( [w1/2-0.2 w1/2+0.5+[-resolution/3 +resolution/3*2]/4], resolution/4 , 1.5 ,0);
-%mesh.y = SmoothMeshLines( [-7*MSL_width -mesh2.y -mesh1.y mesh1.y mesh2.y 7*MSL_width], resolution, 1.5 ,0);
 mesh.y = SmoothMeshLines( [-7*MSL_width 7*MSL_width], resolution, 1.5 ,0);
-
 mesh.z = SmoothMeshLines( [linspace(0,substrate_thickness,2) 3*substrate_thickness], resolution);
 CSX = DefineRectGrid( CSX, unit, mesh );
 
@@ -70,34 +57,28 @@ portstop  = [port_slot/2          ,  MSL_width/2, 0];
 [CSX,port{2}] = AddMSLPort( CSX, 999, 2, 'PEC', portstart, portstop, 0, [0 0 -1], 'MeasPlaneShift',  MSL_length/3 );
     
 
-%ADD STUB
-
-start = [-port_slot/2,  w1/2, substrate_thickness];
-stop  = [ -port_slot/2+l1,  -w1/2, substrate_thickness];
+%STUBS
+start = [-port_slot/2,  0, substrate_thickness];
+stop  = [ -port_slot/2+w2,  MSL_width/2+l1/2, substrate_thickness];
 CSX = AddBox( CSX, 'PEC', 999, start, stop );
 
-start = [-port_slot/2+l1,  w2/2, substrate_thickness];
-stop  = [ -port_slot/2+l1+l2,  -w2/2, substrate_thickness];
+start = [-port_slot/2+w2,  0, substrate_thickness];
+stop  = [ -port_slot/2+w2+l1,  w1, substrate_thickness];
 CSX = AddBox( CSX, 'PEC', 999, start, stop );
 
-start = [-port_slot/2+l1+l2,  w1/2, substrate_thickness];
-stop  = [ -port_slot/2+l1+l2+l3,  -w1/2, substrate_thickness];
+start = [-port_slot/2+w2+l1,  0, substrate_thickness];
+stop  = [ -port_slot/2+w2+l1+w3,  MSL_width/2+l1/2, substrate_thickness];
+CSX = AddBox( CSX, 'PEC', 999, start, stop );
+    
+start = [-port_slot/2+w2+l1+w3,  0, substrate_thickness];
+stop  = [ -port_slot/2+w2+2*l1+w3,  w1, substrate_thickness];
 CSX = AddBox( CSX, 'PEC', 999, start, stop );
 
-start = [-port_slot/2+l1+l2+l3,  w2/2, substrate_thickness];
-stop  = [ -port_slot/2+l1+l2+l3+l4,  -w2/2, substrate_thickness];
+start = [-port_slot/2+w2+2*l1+w3,  0, substrate_thickness];
+stop  = [ -port_slot/2+w2+2*l1+w3+w2,  MSL_width/2+l1/2, substrate_thickness];
 CSX = AddBox( CSX, 'PEC', 999, start, stop );
 
-start = [-port_slot/2+l1+l2+l3+l4,  w1/2, substrate_thickness];
-stop  = [ -port_slot/2+l1+l2+l3+l4+l5,  -w1/2, substrate_thickness];
-CSX = AddBox( CSX, 'PEC', 999, start, stop );
-
-start = [-port_slot/2+l1+l2+l3+l4+l5,  w2/2, substrate_thickness];
-stop  = [ -port_slot/2+l1+l2+l3+l4+l5+l6,  -w2/2, substrate_thickness];
-CSX = AddBox( CSX, 'PEC', 999, start, stop );
-
-
-
+    
 %RUN OPENEMS
 Sim_Path = 'tmp';
 Sim_CSX = 'msl.xml';
