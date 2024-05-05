@@ -3,11 +3,11 @@ clear
 clc
 
 %% INPUT PARAMETERS
-e_r = 4.2; %relative permittivity of the dielectric
-Z0 = 50; % characteristic impedance
-d = 1.58; % heigth of the dielectric in mm
-phase_shift = 270; % phase shift required in degree
-frequency = 10e9; %frequency of interest for the phase shift
+e_r = 10.8; %relative permittivity of the dielectric
+Z0 = 14; % characteristic impedance
+d = 1.27; % heigth of the dielectric in mm
+phase_shift = 11.8; % phase shift required in degree
+frequency = 2.5e9; %frequency of interest for the phase shift
 
 
 %% CALCULATIONS
@@ -23,5 +23,5 @@ elseif W_over_d > 2
 end
 
 k_0 = 2*pi.*frequency ./ (3*10^8);
-e_e = (e_r+1)/2 + (e_r-1)/2 * 1/(sqrt(1+12*d/W));
+e_e = (e_r+1)/2 + (e_r-1)/2 * 1/(sqrt(1+12*d/W))
 l = (phase_shift*pi/180)/(sqrt(e_e)*k_0) *10^3
