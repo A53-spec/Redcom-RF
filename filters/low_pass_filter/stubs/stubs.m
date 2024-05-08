@@ -105,4 +105,4 @@ plot(f/1e9,20*log10(abs(s21)),'r--','LineWidth',2);
 legend('S_{11}','S_{21}');
 ylabel('S-Parameter (dB)','FontSize',12);
 xlabel('frequency (GHz) \rightarrow','FontSize',12);
-ylim([-60 2]);
+ylim([-50 2]);
