@@ -19,7 +19,7 @@ f_max = 6e9;
 w_50 = 3.127;
 w_70 = 1.6688;
 
-l_lambda_4 = 12.2;
+l_lambda_4 = 19;
 l1_1 = l_lambda_4/3;
 l1_2 = l_lambda_4/3;
 l1_3 = l_lambda_4/3;
