@@ -3,9 +3,9 @@ clear
 clc
 
 %% INPUT PARAMETERS
-e_r = 10.8; %relative permittivity of the dielectric
-Z0 = 93; % characteristic impedance
-d = 1.27; % heigth of the dielectric in mm
+e_r = 4.2; %relative permittivity of the dielectric
+Z0 = sqrt(50*100); % characteristic impedance
+d = 1.58; % heigth of the dielectric in mm
 phase_shift = 11.8; % phase shift required in degree
 frequency = 2.5e9; %frequency of interest for the phase shift
 
