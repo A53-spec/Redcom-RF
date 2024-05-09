@@ -13,6 +13,7 @@ MSL_length = 20;
 substrate_thickness = 1.58;
 substrate_epr = 4.2;
 
+f_min = 6e9;
 f_max = 6e9;
 
 %Filter parameters
